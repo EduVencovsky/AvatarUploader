@@ -2,19 +2,12 @@ import React from 'react';
 import { ThemeProvider } from 'emotion-theming';
 import { AvatarUploader } from './components/AvatarUploader';
 import { AppContainer } from './components/AppContainer';
-
-const theme = {
-  colors: {
-    primary: '#4DD684',
-    secondary: '#3F80FF',
-    background: '#FFFFFF'
-  },
-};
+import { theme } from './utils/theme';
 
 function App() {
   return (
     <ThemeProvider theme={theme}>
-      <AppContainer bg="background">
+      <AppContainer bg="surface">
           <AvatarUploader data-testid="avatar-uploader" />
       </AppContainer>
     </ThemeProvider>
