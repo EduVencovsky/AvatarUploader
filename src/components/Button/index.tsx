@@ -27,7 +27,7 @@ export const Button = ({
   ...otherProps
 }: ButtonProps) => {
   return (
-    <StyledButton {...{ variant, textColor }} {...otherProps}>
+    <StyledButton data-testid='styled-button' {...{ variant, textColor }} {...otherProps}>
       {children}
     </StyledButton>
   )

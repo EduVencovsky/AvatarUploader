@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from '@emotion/styled'
 
-type SliderProps = React.InputHTMLAttributes<HTMLInputElement>
+type SliderProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'>
 
 const StyledSlider = styled.input`
   width: 100%;
@@ -11,6 +11,6 @@ export const Slider = ({
   ...otherProps
 }: SliderProps) => {
   return (
-    <StyledSlider type="range" {...otherProps} />
+    <StyledSlider data-testid="styled-slider" {...otherProps} type="range"  />
   )
 }

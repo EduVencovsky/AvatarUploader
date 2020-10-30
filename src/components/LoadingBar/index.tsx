@@ -12,7 +12,7 @@ type LoadingBarProps = {
 
 const LoadingBarProgress = styled.div<LoadingBarProps, Theme>`
   ${color}
-  width: ${props => (props.progress / props.maxProgress) * 100}%;
+  width: ${props => Math.min((props.progress / props.maxProgress) * 100, 100)}%;
   transition: width 0.5s;
   height: 100%;
   position: absolute;
@@ -38,9 +38,9 @@ export const LoadingBar = ({
   ...otherProps
 }: LoadingBarProps) => {
   return (
-    <LoadingBarContainer {...otherProps}>
-      <LoadingBarBackground />
-      <LoadingBarProgress {...{ progress, maxProgress, bg }} />
+    <LoadingBarContainer data-testid="loading-bar-container" {...otherProps}>
+      <LoadingBarBackground data-testid="loading-bar-background"/>
+      <LoadingBarProgress data-testid="loading-bar-progress" {...{ progress, maxProgress, bg }} />
     </LoadingBarContainer>
   )
 }
