@@ -8,7 +8,7 @@ it('renders correctly', async () => {
 });
 
 it('renders snapshot', async () => {
-  const { container } = render(<Button textColor="primary">click me</Button>);
+  const { container } = render(<Button textColor="red">click me</Button>);
   expect(container).toMatchSnapshot();
 });
 

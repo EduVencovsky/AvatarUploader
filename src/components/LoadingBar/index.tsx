@@ -2,6 +2,7 @@ import { css } from '@emotion/core'
 import styled from '@emotion/styled'
 import React from 'react'
 import { layout, LayoutProps } from 'styled-system'
+import { clamp } from '../../utils'
 import { color, ColorProps } from '../../utils/color'
 import { Theme } from '../../utils/theme'
 
@@ -12,7 +13,7 @@ type LoadingBarProps = {
 
 const LoadingBarProgress = styled.div<LoadingBarProps, Theme>`
   ${color}
-  width: ${props => Math.min((props.progress / props.maxProgress) * 100, 100)}%;
+  width: ${props => clamp(props.maxProgress === 0 ? 100 : ((props.progress / props.maxProgress) * 100), 0, 100)}%;
   transition: width 0.5s;
   height: 100%;
   position: absolute;

@@ -5,7 +5,8 @@ import { border, BorderProps, layout, LayoutProps, space, SpaceProps } from 'sty
 
 type ContainerProps = {
   children: NonNullable<React.ReactNode>
-} & ColorProps & LayoutProps & SpaceProps & BorderProps
+} & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
+  & ColorProps & LayoutProps & SpaceProps & BorderProps
 
 
 const StyledContainer = styled.div<ContainerProps>`

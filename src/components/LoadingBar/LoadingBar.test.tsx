@@ -26,3 +26,20 @@ it('renders progress bar without overflow when progress > maxProgress', async ()
   expect(getByTestId('loading-bar-progress')).toHaveStyle('width: 100%;');
   rerender(<LoadingBar progress={++progress} maxProgress={maxProgress} />);  
 });
+
+it('renders progress bar without overflow when progress < 0', async () => {
+  const maxProgress = 10
+  let progress = -1
+  const { getByTestId, rerender } = render(<LoadingBar progress={progress} maxProgress={maxProgress} />);  
+  expect(getByTestId('loading-bar-progress')).toHaveStyle('width: 0%;');
+  rerender(<LoadingBar progress={++progress} maxProgress={maxProgress} />);  
+});
+
+
+it('renders progress bar without overflow when maxProgress == 0', async () => {
+  const maxProgress = 0
+  let progress = 0
+  const { getByTestId, rerender } = render(<LoadingBar progress={progress} maxProgress={maxProgress} />);  
+  expect(getByTestId('loading-bar-progress')).toHaveStyle('width: 100%;');
+  rerender(<LoadingBar progress={++progress} maxProgress={maxProgress} />);  
+});

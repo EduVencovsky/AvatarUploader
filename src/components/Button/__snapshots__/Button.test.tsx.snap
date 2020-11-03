@@ -21,7 +21,7 @@ exports[`renders correctly 1`] = `
 
 exports[`renders snapshot 1`] = `
 .emotion-0 {
-  color: primary;
+  color: red;
   background: none;
   border: none;
   padding: 0;
