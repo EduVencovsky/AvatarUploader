@@ -13,7 +13,7 @@ type LoadingBarProps = {
 
 const LoadingBarProgress = styled.div<LoadingBarProps, Theme>`
   ${color}
-  width: ${props => clamp(props.maxProgress === 0 ? 100 : ((props.progress / props.maxProgress) * 100), 0, 100)}%;
+  width: ${props => clamp(props.maxProgress === 0 ? 0 : ((props.progress / props.maxProgress) * 100), 0, 100)}%;
   transition: width 0.5s;
   height: 100%;
   position: absolute;

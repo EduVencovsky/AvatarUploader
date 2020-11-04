@@ -7,6 +7,7 @@ import { Container } from '../Container'
 import { CloseIcon } from '../Icons/CloseIcon'
 import { ExclamationIcon } from '../Icons/ExclamationIcon'
 import { PhotoIconBlack, PhotoIconWhite } from '../Icons/PhotoIcon'
+import { ImageCroppingDisplay } from '../ImageCroppingDisplay'
 import { LoadingBar } from '../LoadingBar'
 import { Slider } from '../Slider'
 import { Typography } from '../Typography'
@@ -52,18 +53,6 @@ const defaultFileValidation = (files: FileList, accept: AvatarUploaderProps['acc
   return { data, error }
 }
 
-// const getFileInChunks = (file: File, chunkSize: number) => {
-//   const size = file.size
-//   const chunks: Chunk[] = []
-//   let loadedPosition = 0
-//   let index = 0
-//   while (loadedPosition <= size) {
-//     chunks.push({ blob: file.slice(loadedPosition, chunkSize), index })
-//     loadedPosition += chunkSize
-//   }
-//   return chunks
-// }
-
 export const AvatarUploader = ({
   validateFile,
   accept,
@@ -77,7 +66,7 @@ export const AvatarUploader = ({
   const [error, setError] = useState<ErrorMessage>(null)
   const [avatarFile, setAvatarFile] = useState<File>()
   const [progress, setProgress] = useState<{ progress: number, maxProgress: number }>({ progress: 0, maxProgress: 0 })
-  const [uploaderStatus, setUploaderStatus] = useState<UploadedStatus>('initial')
+  const [uploaderStatus, setUploaderStatus] = useState<UploadedStatus>('loading')
 
   const onDrop = useCallback((e: React.DragEvent<HTMLElement>) => {
     const files = e.dataTransfer.files
@@ -106,10 +95,9 @@ export const AvatarUploader = ({
     const size = currentFile.size;
     const reader = new FileReader();
     const chunks: Chunk[] = []
-    let loaded = 0;
-    let index = 0
 
     const uploadFile = async (chunks: Chunk[]) => {
+      // Upload all chunks at once
       const chunkUploadPromise = chunks.map(async chunk => {
         const uploadResult = await uploadChunk({ file: currentFile, chunk })
         if (uploadResult.error)
@@ -117,20 +105,23 @@ export const AvatarUploader = ({
         setProgress(prev => ({ maxProgress: prev.maxProgress, progress: prev.progress + chunkSize }))
         return uploadResult
       })
-      await Promise.all(chunkUploadPromise).then(x => {
-        // TODO: implement chunk upload retry 
-        const failedUploads = x.find(x => x.error)
-        if (failedUploads) {
-          setError(failedUploads.error)
-        } else {
-          setUploaderStatus('cropping')
+
+      try {
+        await Promise.all(chunkUploadPromise)
+        setUploaderStatus('cropping')
+      } catch (error) {
+        if (error instanceof Error) {
+          setError('Sorry, the upload failed.')
         }
-      }).catch((error: ErrorMessage) => {
-        setError(error)
+        else if (typeof error === 'string') {
+          setError(error)
+        }
         setUploaderStatus('loading')
-      })
+      }
     }
 
+    let loaded = 0;
+    let index = 0
     // initial chunk
     let chunk = currentFile.slice(0, chunkSize);
     reader.readAsBinaryString(chunk);
@@ -143,12 +134,12 @@ export const AvatarUploader = ({
         reader.readAsBinaryString(chunk);
       } else {
         loaded = size;
+        // starts loading
+        setProgress({ progress: 0, maxProgress: size })
         uploadFile(chunks)
       }
     };
 
-    // starts loading
-    setProgress({ progress: 0, maxProgress: size })
   }, [setError, validateFile, uploadChunk, accept, chunkSize])
 
   const { isDragging, ...dragDropProps } = useDragDrop({ onDrop })
@@ -182,19 +173,26 @@ export const AvatarUploader = ({
         </Box>
       )}
       {uploaderStatus === 'loading' && progress && (
-        <Box>
-          <Box>
-
+        <Box display="flex" height="100%">
+          <Box flex={1} display="flex" flexDirection="column" justifyContent="center" alignItems="center">
+            {/* TODO: Fix the display of the image cropping */}
+            <ImageCroppingDisplay
+              height="0"
+              pb="100%"
+              width="100%"
+            />
           </Box>
-          <Box>
-            {error ? (
-              <Typography variant="error">{error}</Typography>
-            ) : (
-                <Typography>
-                  {avatarFile?.name}
-                </Typography>
-              )}
-            <LoadingBar maxProgress={progress.maxProgress} progress={progress.progress} />
+          <Box flex={3} padding={10} display="flex" flexDirection="column" justifyContent="center" alignItems="center">
+            <Box width="100%">
+              {error ? (
+                <Typography variant="error">{error}</Typography>
+              ) : (
+                  <Typography>
+                    {avatarFile?.name}
+                  </Typography>
+                )}
+              <LoadingBar maxProgress={progress.maxProgress} progress={progress.progress} />
+            </Box>
           </Box>
         </Box>
       )}

@@ -36,10 +36,10 @@ it('renders progress bar without overflow when progress < 0', async () => {
 });
 
 
-it('renders progress bar without overflow when maxProgress == 0', async () => {
+it('renders empty progress bar when maxProgress == 0', async () => {
   const maxProgress = 0
   let progress = 0
   const { getByTestId, rerender } = render(<LoadingBar progress={progress} maxProgress={maxProgress} />);  
-  expect(getByTestId('loading-bar-progress')).toHaveStyle('width: 100%;');
+  expect(getByTestId('loading-bar-progress')).toHaveStyle('width: 0%;');
   rerender(<LoadingBar progress={++progress} maxProgress={maxProgress} />);  
 });
