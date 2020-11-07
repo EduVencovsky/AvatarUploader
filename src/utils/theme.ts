@@ -1,6 +1,7 @@
 export interface Theme {
   colors: {
     primary: string
+    onPrimary: string
     secondary: string
     background: string
     surface: string
@@ -12,6 +13,7 @@ export interface Theme {
 export const theme: Theme = {
   colors: {
     primary: '#3F80FE',
+    onPrimary: '#FFFFFF',
     secondary: '#4DD684',
     background: '#F2F5F8',
     surface: '#FFFFFF',

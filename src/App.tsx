@@ -1,13 +1,12 @@
 import React from 'react';
-import { ThemeProvider } from 'emotion-theming';
 import { AvatarUploader } from './components/AvatarUploader';
 import { AppContainer } from './components/AppContainer';
-import { theme } from './utils/theme';
 import { sleep } from './utils/mock';
+import { ThemeProvider } from './components/ThemeProvider';
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider>
       <AppContainer bg="surface">
         <AvatarUploader
           chunkSize={1024 * 20}

@@ -1,7 +1,6 @@
 import React from 'react'
 import styled from '@emotion/styled'
 import { color, ColorProps } from '../../utils/color'
-import { ReactChild } from 'react'
 
 export const ContainerStyle = styled.div<ColorProps>`
   ${color}
@@ -14,7 +13,7 @@ export const ContainerStyle = styled.div<ColorProps>`
 `
 
 type AppContainerProps = ColorProps & {
-  children: ReactChild
+  children: React.ReactNode
 }
 
 export const AppContainer = ({ children, ...otherProps }: AppContainerProps) => {

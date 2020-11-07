@@ -9,25 +9,32 @@ type ButtonProps = {
 } & ColorProps & React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>
 
 const StyledButton = styled.button<ButtonProps, Theme>`
-  ${props => props.variant === 'text' ? css`
-    ${color(props)}
-    background: none;
-  ` : ''}
 	border: none;
 	padding: 0;
 	font: inherit;
 	cursor: pointer;
 	outline: inherit;
+  ${props => props.variant === 'text' ? css`
+    color: ${props.theme.colors.primary};
+    background: none;
+  ` : ''}
+  ${props => props.variant === 'contained' ? css`    
+    color: ${props.theme.colors.onPrimary};
+    background-color: ${props.theme.colors.primary};
+    padding: 4px 16px;
+    border-radius: 16px;
+  ` : ''}
 `
 
 export const Button = ({
   children,
   textColor = 'primary',
   variant = 'text',
+  bg = 'primary',  
   ...otherProps
 }: ButtonProps) => {
   return (
-    <StyledButton data-testid='styled-button' {...{ variant, textColor }} {...otherProps}>
+    <StyledButton data-testid='styled-button' {...{ bg, variant, textColor }} {...otherProps}>
       {children}
     </StyledButton>
   )

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import { useDragDrop } from '../../hooks/useDragDrop'
 import { ErrorMessage, ResultDataError } from '../../utils/validation'
 import { Box } from '../Box'
@@ -30,6 +30,8 @@ interface AvatarUploaderProps {
   chunkSize?: number
   uploadChunk: (chunk: FileChunk) => Promise<ResultDataError<FileChunk, ErrorMessage>>
 }
+
+const CANCELATION_TOKEN_ERROR = '__CANCELATION_TOKEN_ERROR__'
 
 type UploadedStatus = 'initial' | 'loading' | 'cropping' | 'done'
 
@@ -67,6 +69,15 @@ export const AvatarUploader = ({
   const [avatarFile, setAvatarFile] = useState<File>()
   const [progress, setProgress] = useState<{ progress: number, maxProgress: number }>({ progress: 0, maxProgress: 0 })
   const [uploaderStatus, setUploaderStatus] = useState<UploadedStatus>('loading')
+  const cancelationToken = useRef({ isCanceled: false })
+
+  const resetState = useCallback(() => {
+    setError(null)
+    setAvatarFile(undefined)
+    setProgress({ progress: 0, maxProgress: 0 })
+    setUploaderStatus('initial')
+    cancelationToken.current.isCanceled = true  
+  }, [])
 
   const onDrop = useCallback((e: React.DragEvent<HTMLElement>) => {
     const files = e.dataTransfer.files
@@ -90,6 +101,7 @@ export const AvatarUploader = ({
     // start loading file
     setAvatarFile(currentFile)
     setUploaderStatus('loading')
+    cancelationToken.current.isCanceled = false  
 
     // upload by chunks
     const size = currentFile.size;
@@ -102,6 +114,8 @@ export const AvatarUploader = ({
         const uploadResult = await uploadChunk({ file: currentFile, chunk })
         if (uploadResult.error)
           throw uploadResult.error
+        if(cancelationToken.current.isCanceled)
+          throw CANCELATION_TOKEN_ERROR
         setProgress(prev => ({ maxProgress: prev.maxProgress, progress: prev.progress + chunkSize }))
         return uploadResult
       })
@@ -114,6 +128,9 @@ export const AvatarUploader = ({
           setError('Sorry, the upload failed.')
         }
         else if (typeof error === 'string') {
+          if (error === CANCELATION_TOKEN_ERROR) {
+            return
+          }
           setError(error)
         }
         setUploaderStatus('loading')
@@ -143,11 +160,11 @@ export const AvatarUploader = ({
   }, [setError, validateFile, uploadChunk, accept, chunkSize])
 
   const { isDragging, ...dragDropProps } = useDragDrop({ onDrop })
-
+  console.log(progress)
   return (
     <Container
       {...dragDropProps}
-      border={isDragging ? "2px solid deepskyblue" : undefined}
+      border={`2px dashed ${isDragging ? 'deepskyblue' : '#C7CDD3'}`}
       width="553px"
       height="177px"
       borderRadius="8px">
@@ -193,6 +210,11 @@ export const AvatarUploader = ({
                 )}
               <LoadingBar maxProgress={progress.maxProgress} progress={progress.progress} />
             </Box>
+          </Box>
+          <Box>
+            <Button variant='text' onClick={resetState}>
+              <CloseIcon />
+            </Button>
           </Box>
         </Box>
       )}
