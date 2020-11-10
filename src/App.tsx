@@ -1,16 +1,25 @@
 import React from 'react';
-import { AvatarUploader } from './components/AvatarUploader';
+import { AvatarUploader, FileChunk } from './components/AvatarUploader';
 import { AppContainer } from './components/AppContainer';
 import { sleep } from './utils/mock';
 import { ThemeProvider } from './components/ThemeProvider';
 
+let attemps = 0
+
 function App() {
+
+  const onUploadChunk = async (chunk: FileChunk) => {
+    await sleep(Math.random() * 2000); 
+    // attemps++
+    return { data: chunk, error: null }; 
+  }
+
   return (
     <ThemeProvider>
       <AppContainer bg="surface">
         <AvatarUploader
           chunkSize={1024 * 20}
-          uploadChunk={async (chunk) => { await sleep(Math.random() * 2000); return { data: chunk, error: null }; }}
+          uploadChunk={onUploadChunk}
           data-testid="avatar-uploader"
         />
       </AppContainer>

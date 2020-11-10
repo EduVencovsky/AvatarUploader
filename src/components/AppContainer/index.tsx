@@ -16,10 +16,8 @@ type AppContainerProps = ColorProps & {
   children: React.ReactNode
 }
 
-export const AppContainer = ({ children, ...otherProps }: AppContainerProps) => {
+export const AppContainer = ({ ...otherProps }: AppContainerProps) => {
   return (
-    <ContainerStyle {...otherProps}>
-      {children}
-    </ContainerStyle>
+    <ContainerStyle {...otherProps} />
   )
 }

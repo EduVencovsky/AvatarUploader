@@ -15,12 +15,11 @@ const StyledButton = styled.button<ButtonProps, Theme>`
 	cursor: pointer;
 	outline: inherit;
   ${props => props.variant === 'text' ? css`
-    color: ${props.theme.colors.primary};
+    ${color(props)}
     background: none;
   ` : ''}
   ${props => props.variant === 'contained' ? css`    
-    color: ${props.theme.colors.onPrimary};
-    background-color: ${props.theme.colors.primary};
+    ${color(props)}
     padding: 4px 16px;
     border-radius: 16px;
   ` : ''}

@@ -2,10 +2,9 @@ import styled from '@emotion/styled'
 import React from 'react'
 import { layout, LayoutProps, position, PositionProps, space, SpaceProps } from 'styled-system'
 import { Theme } from '../../utils/theme'
-import { PhotoIconWhite } from '../Icons/PhotoIcon'
 
 type ImageDisplayProps = {
-
+  children?: React.ReactNode
 } & LayoutProps & SpaceProps & PositionProps
 
 const ImageCircle = styled.div<ImageDisplayProps, Theme>`
@@ -22,8 +21,6 @@ const ImageCircle = styled.div<ImageDisplayProps, Theme>`
 
 export const ImageCroppingDisplay = ({ ...otherProps }: ImageDisplayProps) => {
   return (
-    <ImageCircle {...otherProps}>
-      <PhotoIconWhite />
-    </ImageCircle>
+    <ImageCircle {...otherProps} />
   )
 }
