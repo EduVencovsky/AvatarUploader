@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useDragDrop } from '../../hooks/useDragDrop'
-import { getImageBase64 } from '../../utils'
+import { useFileUploader } from '../../hooks/useFileUploader'
+import { Chunk, FileChunk, getFileBase64 } from '../../utils/files'
 import { ErrorMessage, ResultDataError } from '../../utils/validation'
 import { Box } from '../Box'
 import { Button } from '../Button'
@@ -14,16 +15,6 @@ import { Slider } from '../Slider'
 import { Typography } from '../Typography'
 import { UploaderInitialContent } from './UploaderInitialContent'
 import { UploaderLoadingContent } from './UploaderLoadingContent'
-
-export interface FileChunk {
-  chunk: Chunk
-  file: Pick<File, 'type' | 'size' | 'name' | 'lastModified'>
-}
-
-export interface Chunk {
-  chunk: string | ArrayBuffer | null | undefined
-  index: number
-}
 
 interface AvatarUploaderProps {
   validateFile?: (file: File) => ResultDataError<boolean, ErrorMessage>
@@ -66,15 +57,17 @@ export const AvatarUploader = ({
   const [error, setError] = useState<ErrorMessage>(null)
   const [avatarFile, setAvatarFile] = useState<File>()
   const [avatarFileBase64, setAvatarFileBase64] = useState<string | undefined>()
-  const [loadingStatus, setLoadingStatus] = useState<{ progress: number, maxProgress: number }>({ progress: 0, maxProgress: 0 })
   const [uploaderStatus, setUploaderStatus] = useState<UploadedStatus>('loading')
-  const cancelationToken = useRef({ isCanceled: false })
+  const [uploadFile, { progress, maxProgress, cancelUpload }] = useFileUploader({
+    uploadChunk,
+    onAfterUploadSucess: () => setUploaderStatus('cropping')
+  })
 
   useEffect(() => {
     const getBase64 = async () => {
       if (avatarFile) {
         try {
-          const base64 = await getImageBase64<string>(avatarFile)
+          const base64 = await getFileBase64<string>(avatarFile)
           setAvatarFileBase64(base64)
         } catch (error) {
           setAvatarFileBase64(undefined)
@@ -87,89 +80,9 @@ export const AvatarUploader = ({
   const resetState = useCallback(() => {
     setError(null)
     setAvatarFile(undefined)
-    setLoadingStatus({ progress: 0, maxProgress: 0 })
     setUploaderStatus('initial')
-    cancelationToken.current.isCanceled = true
-  }, [])
-
-  const uploadFile = useCallback((file: File) => {
-    // default component validation
-    const defaultValidation = defaultFileValidation(file, accept)
-    if (!defaultValidation.data) {
-      return setError(defaultValidation.error)
-    }
-    // allow any custom validation
-    if (validateFile) {
-      const fileValidation = validateFile(file)
-      if (!fileValidation.data) {
-        return setError(fileValidation.error)
-      }
-    }
-
-    // reset any previous validation
-    setError(null)
-    // start loading file
-    setAvatarFile(file)
-    setUploaderStatus('loading')
-    cancelationToken.current.isCanceled = false
-
-    // upload by chunks
-    const size = file.size;
-    const reader = new FileReader();
-    const chunks: Chunk[] = []
-
-    const uploadFileByChunks = async (chunks: Chunk[]) => {
-      // Upload all chunks at once
-      const chunkUploadPromise = chunks.map(async chunk => {
-        const uploadResult = await uploadChunk({ file: file, chunk })
-        if (uploadResult.error) {
-          cancelationToken.current.isCanceled = true
-          throw uploadResult.error
-        }
-        if (cancelationToken.current.isCanceled) {
-          throw CANCELATION_TOKEN_ERROR
-        }
-        setLoadingStatus(prev => ({ maxProgress: prev.maxProgress, progress: prev.progress + chunkSize }))
-        return uploadResult
-      })
-
-      try {
-        await Promise.all(chunkUploadPromise)
-        setUploaderStatus('cropping')
-      } catch (error) {
-        if (error instanceof Error) {
-          setError('Sorry, the upload failed.')
-        }
-        else if (typeof error === 'string') {
-          if (error === CANCELATION_TOKEN_ERROR) {
-            return
-          }
-          setError(error)
-        }
-        setUploaderStatus('loading')
-      }
-    }
-
-    let loaded = 0;
-    let index = 0
-    // initial chunk
-    let chunk = file.slice(0, chunkSize);
-    reader.readAsBinaryString(chunk);
-    reader.onload = function (e) {
-      chunks.push({ chunk: e.target?.result, index })
-      index++
-      loaded += chunkSize;
-      if (loaded <= size) {
-        chunk = file.slice(loaded, loaded + chunkSize);
-        reader.readAsBinaryString(chunk);
-      } else {
-        loaded = size;
-        // starts loading
-        setLoadingStatus({ progress: 0, maxProgress: size })
-        uploadFileByChunks(chunks)
-      }
-    };
-  }, [setError, validateFile, uploadChunk, accept, chunkSize])
+    cancelUpload()
+  }, [cancelUpload])
 
   const onDrop = useCallback((e: React.DragEvent<HTMLElement>) => {
     const files = e.dataTransfer.files
@@ -178,12 +91,14 @@ export const AvatarUploader = ({
       resetState()
       return setError('Can only upload 1 file')
     }
-
-    uploadFile(files[0])
+    const file = files[0]
+    setAvatarFile(file)
+    setUploaderStatus('loading')
+    uploadFile(file)
   }, [uploadFile, resetState])
 
   const { isDragging, ...dragDropProps } = useDragDrop({ onDrop })
-
+  console.log(progress, maxProgress)
   return (
     <Container
       {...dragDropProps}
@@ -194,13 +109,13 @@ export const AvatarUploader = ({
       {uploaderStatus === 'initial' && (
         <UploaderInitialContent {...{ logo, description, error }} />
       )}
-      {uploaderStatus === 'loading' && loadingStatus && (
+      {uploaderStatus === 'loading' && (
         <UploaderLoadingContent
           error={error}
           file={avatarFile}
           onReset={resetState}
           onTryAgain={() => avatarFile != null ? uploadFile(avatarFile) : undefined}
-          {...loadingStatus}
+          {...{ progress, maxProgress }}
         />
       )}
       {uploaderStatus === 'cropping' && (

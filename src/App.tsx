@@ -1,8 +1,9 @@
 import React from 'react';
-import { AvatarUploader, FileChunk } from './components/AvatarUploader';
+import { AvatarUploader } from './components/AvatarUploader';
 import { AppContainer } from './components/AppContainer';
 import { sleep } from './utils/mock';
 import { ThemeProvider } from './components/ThemeProvider';
+import { FileChunk } from './utils/files';
 
 let attemps = 0
 
